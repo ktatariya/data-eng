@@ -2,6 +2,14 @@ from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime
+from airflow.models import DAG, Variable
+
+import batch_1.tasks.python.raw_s3 as py0
+import batch_1.tasks.python.staging_s3 as py1
+import batch_1.tasks.python.snowflake_raw as py2
+import batch_1.tasks.python.snowflake_meta as py3
+import batch_1.tasks.python.snowflake_staging as py4
+import batch_1.tasks.python.snowflake_reporting as py5
 
 # Define default arguments for the DAG
 default_args = {
@@ -25,37 +33,37 @@ end_task = DummyOperator(task_id='end', dag=dag)
 
 task_a = PythonOperator(
     task_id='raw_s3',
-    python_callable=lambda: print('Sources to S3 Raw Bucket'),
+    python_callable=py0.raw_s3,
     dag=dag,
 )
 
 task_b = PythonOperator(
     task_id='staging_s3',
-    python_callable=lambda: print('S3 Raw Bucket to S3 Staging Bucket in one forced format and Encoding'),
+    python_callable=py1.staging_s3,
     dag=dag,
 )
 
 task_c = PythonOperator(
     task_id='snowflake_raw',
-    python_callable=lambda: print('S3 Staging to Snowflake Raw Copy Command'),
+    python_callable=py2.snowflake_raw,
     dag=dag,
 )
 
 task_d = PythonOperator(
     task_id='snowflake_meta',
-    python_callable=lambda: print('Meta Information from S3'),
+    python_callable=py3.snowflake_meta,
     dag=dag,
 )
 
 task_e = PythonOperator(
     task_id='snowflake_staging',
-    python_callable=lambda: print('Merge script to remove duplicates'),
+    python_callable=py4.snowflake_staging,
     dag=dag,
 )
 
 task_f = PythonOperator(
     task_id='snowflake_reporting',
-    python_callable=lambda: print('Transformations performed as per business needs'),
+    python_callable=py5.snowflake_reporting,
     dag=dag,
 )
 
